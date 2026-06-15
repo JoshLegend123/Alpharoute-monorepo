@@ -1,14 +1,15 @@
 import express from 'express';
-import cors from 'cors'; // <-- Ensure this is imported
+import cors from 'cors';
 import yieldRouter from './routes/yieldRouter.js';
 
 const app = express();
 
-// Configure CORS to whitelist your live frontend URL
+// Configure CORS with your exact, character-perfect frontend origins
 app.use(cors({
   origin: [
-    'https://alpharoutefrontend-production.up.railway.app/', // <-- Swap this with your actual live frontend link!
-    'http://localhost:3000' // Keeps local development working perfectly too
+    'https://alpharoutefrontend-production.up.railway.app',   // <-- Match your exact browser origin perfectly
+    'https://alpharoute-frontend-production.up.railway.app',  // Alternate layout fallback
+    'http://localhost:3000'                                   // Local development fallback
   ],
   methods: ['GET', 'POST'],
   credentials: true
