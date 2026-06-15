@@ -86,9 +86,9 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://127.0.0.1:3001/api/yields", {
-          signal: controller.signal,
-        });
+        const res = await fetch("https://alpharoutebackend-production-40c9.up.railway.app/api/yields", {
+  signal: controller.signal,
+});
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
         
         const payload = await res.json();
