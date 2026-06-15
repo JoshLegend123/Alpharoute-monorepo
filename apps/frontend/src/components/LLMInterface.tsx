@@ -1,3 +1,4 @@
+// apps/frontend/components/LLMInterface.tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -7,6 +8,127 @@ interface Message {
   content: string;
   timestamp: string;
 }
+
+// ---------- Explicit Native Styles Framework ----------
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    height: '550px',
+    width: '100%',
+    backgroundColor: 'rgba(24, 24, 27, 0.4)',
+    border: '1px solid #27272a',
+    borderRadius: '1rem',
+    overflow: 'hidden',
+    boxSizing: 'border-box' as const,
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '1rem 1.5rem',
+    backgroundColor: '#18181b',
+    borderBottom: '1px solid #27272a',
+  },
+  statusGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+  },
+  pulseDot: {
+    width: '0.5rem',
+    height: '0.5rem',
+    backgroundColor: '#10b981',
+    borderRadius: '50%',
+    boxShadow: '0 0 8px #10b981',
+  },
+  headerTitle: {
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    color: '#e4e4e7',
+    letterSpacing: '0.05em',
+  },
+  headerMeta: {
+    fontFamily: 'monospace',
+    fontSize: '0.75rem',
+    color: '#71717a',
+  },
+  streamArea: {
+    flex: 1,
+    overflowY: 'auto' as const,
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '1rem',
+    backgroundColor: 'rgba(9, 9, 11, 0.2)',
+  },
+  messageRow: (role: 'user' | 'assistant' | 'system') => ({
+    padding: '1rem',
+    borderRadius: '0.75rem',
+    border: '1px solid',
+    maxWidth: '85%',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    lineHeight: 1.5,
+    whiteSpace: 'pre-wrap' as const,
+    alignSelf: role === 'user' ? ('flex-end' as const) : ('flex-start' as const),
+    backgroundColor: 
+      role === 'user' ? '#18181b' : 
+      role === 'system' ? 'rgba(153, 27, 27, 0.1)' : 'rgba(39, 39, 42, 0.3)',
+    borderColor: 
+      role === 'user' ? '#3f3f46' : 
+      role === 'system' ? 'rgba(153, 27, 27, 0.3)' : '#27272a',
+    color: 
+      role === 'user' ? '#34d399' : 
+      role === 'system' ? '#f87171' : '#d4d4d8',
+  }),
+  msgMeta: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '0.7rem',
+    color: '#71717a',
+    marginBottom: '0.5rem',
+    textTransform: 'uppercase' as const,
+  },
+  loadingText: {
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    color: '#a1a1aa',
+    paddingLeft: '0.5rem',
+    fontStyle: 'italic',
+  },
+  inputForm: {
+    display: 'flex',
+    gap: '0.75rem',
+    padding: '1rem',
+    backgroundColor: '#18181b',
+    borderTop: '1px solid #27272a',
+  },
+  textField: {
+    flex: 1,
+    backgroundColor: '#09090b',
+    border: '1px solid #27272a',
+    borderRadius: '0.5rem',
+    padding: '0.75rem 1rem',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    color: '#f4f4f5',
+    outline: 'none',
+  },
+  submitBtn: (disabled: boolean) => ({
+    backgroundColor: disabled ? '#27272a' : '#f4f4f5',
+    color: disabled ? '#71717a' : '#09090b',
+    border: 'none',
+    borderRadius: '0.5rem',
+    padding: '0 1.5rem',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    fontWeight: 'bold',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'background-color 0.2s',
+  })
+};
 
 export default function LLMInterface() {
   const [messages, setMessages] = useState<Message[]>([
@@ -20,7 +142,6 @@ export default function LLMInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to latest logs/messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -40,7 +161,6 @@ export default function LLMInterface() {
     setIsLoading(true);
 
     try {
-      // Connects directly to your live production backend endpoint
       const response = await fetch('https://alpharoutebackend-production-40c9.up.railway.app/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,38 +188,29 @@ export default function LLMInterface() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto bg-slate-950 text-slate-100 rounded-xl border border-slate-800 shadow-2xl overflow-hidden">
+    <div style={styles.container}>
       {/* Header Status Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="font-mono text-sm font-semibold tracking-wider text-slate-300">ALPHAROUTE // INTEL_AGENT_v1</span>
+      <div style={styles.header}>
+        <div style={styles.statusGroup}>
+          <div style={styles.pulseDot} />
+          <span style={styles.headerTitle}>ALPHAROUTE // INTEL_AGENT_v1</span>
         </div>
-        <span className="text-xs font-mono text-slate-500">PROVIDER: LIVE_SUI_MAINNET</span>
+        <span style={styles.headerMeta}>PROVIDER: LIVE_SUI_MAINNET</span>
       </div>
 
       {/* Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 font-mono text-sm selection:bg-emerald-500/30">
+      <div style={styles.streamArea}>
         {messages.map((msg, idx) => (
-          <div 
-            key={idx} 
-            className={`p-4 rounded-lg border max-w-[85%] ${
-              msg.role === 'user' 
-                ? 'bg-slate-900 border-slate-800 ml-auto text-emerald-400' 
-                : msg.role === 'system'
-                ? 'bg-rose-950/30 border-rose-900/50 text-rose-300 w-full max-w-full'
-                : 'bg-slate-900/50 border-slate-800 mr-auto text-slate-300'
-            }`}
-          >
-            <div className="flex justify-between items-center mb-1 opacity-50 text-xs">
-              <span>{msg.role.toUpperCase()}</span>
+          <div key={idx} style={styles.messageRow(msg.role)}>
+            <div style={styles.msgMeta}>
+              <span>{msg.role}</span>
               <span>{msg.timestamp}</span>
             </div>
-            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+            <div>{msg.content}</div>
           </div>
         ))}
         {isLoading && (
-          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-lg mr-auto max-w-[85%] text-slate-400 font-mono animate-pulse">
+          <div style={styles.loadingText}>
             Executing routing calculation matrix...
           </div>
         )}
@@ -107,18 +218,18 @@ export default function LLMInterface() {
       </div>
 
       {/* Terminal Input Box */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-slate-900 border-t border-slate-800 flex space-x-3">
+      <form onSubmit={handleSendMessage} style={styles.inputForm}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask AlphaRoute to aggregate yields or check transaction vectors..."
-          className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 font-mono text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
+          style={styles.textField}
           disabled={isLoading}
         />
         <button
           type="submit"
-          className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-mono font-bold text-sm px-6 py-3 rounded-lg transition-colors"
+          style={styles.submitBtn(isLoading || !input.trim())}
           disabled={isLoading || !input.trim()}
         >
           EXECUTE
