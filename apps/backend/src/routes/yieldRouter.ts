@@ -1,7 +1,7 @@
 // apps/backend/src/routes/yieldRouter.ts
 import { Router, Request, Response } from 'express';
-import { getUnifiedYieldData } from '../services/yieldService'; 
-import { TheGuardian } from '../middleware/guardianService'; 
+import { getUnifiedYieldData } from '../services/yieldService.js'; 
+import { TheGuardian } from '../middleware/guardianService.js'; 
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 // apps/backend/src/server.ts
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
-import yieldRouter from './routes/yieldRouter'; 
+import yieldRouter from './routes/yieldRouter.js'; 
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
