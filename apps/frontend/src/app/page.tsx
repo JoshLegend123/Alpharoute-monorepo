@@ -1,6 +1,7 @@
 // apps/frontend/src/app/page.tsx
 "use client";
 
+import LLMInterface from '../components/LLMInterface';
 import { useEffect, useState, useMemo } from "react";
 import { ConnectButton } from '@mysten/dapp-kit';
 
@@ -50,7 +51,7 @@ const styles = {
     backgroundColor: active ? '#f4f4f5' : '#18181b',
     color: active ? '#09090b' : '#a1a1aa'
   }),
-  grid: { display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' },
+  grid: { display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', marginBottom: '3.5rem' },
   card: { backgroundColor: 'rgba(24, 24, 27, 0.4)', border: '1px solid #27272a', borderRadius: '1rem', padding: '1.5rem', display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between', minHeight: '12rem', position: 'relative' as const },
   badgeRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
   badgeGroup: { display: 'flex', gap: '0.37rem' },
@@ -71,7 +72,9 @@ const styles = {
   tvlLabel: { fontSize: '0.65rem', color: '#71717a', textTransform: 'uppercase' as const },
   tvlValue: { fontSize: '0.875rem', fontWeight: 'bold', color: '#e4e4e7', margin: '0.125rem 0 0 0' },
   optBtn: { backgroundColor: '#f4f4f5', color: '#09090b', border: 'none', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' },
-  statusMessage: { padding: '3rem', textAlign: 'center' as const, color: '#71717a', border: '1px dashed #27272a', borderRadius: '1rem' }
+  statusMessage: { padding: '3rem', textAlign: 'center' as const, color: '#71717a', border: '1px dashed #27272a', borderRadius: '1rem', marginBottom: '3.5rem' },
+  aiSection: { borderTop: '1px solid #18181b', paddingTop: '3rem', marginTop: '1rem' },
+  aiTitle: { fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#e4e4e7', marginBottom: '1.5rem', fontFamily: 'monospace' }
 };
 
 export default function Home() {
@@ -87,8 +90,8 @@ export default function Home() {
         setLoading(true);
         setError(null);
         const res = await fetch("https://alpharoutebackend-production-40c9.up.railway.app/api/yields", {
-  signal: controller.signal,
-});
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
         
         const payload = await res.json();
@@ -208,6 +211,12 @@ export default function Home() {
             })}
           </div>
         )}
+
+        {/* --- INTELLIGENT AGENT PORTAL SECTION --- */}
+        <div style={styles.aiSection}>
+          <h2 style={styles.aiTitle}>// ALPHA_ROUTE INTELLIGENT AGENT TERMINAL</h2>
+          <LLMInterface />
+        </div>
       </div>
     </main>
   );
