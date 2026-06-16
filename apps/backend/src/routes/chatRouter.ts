@@ -3,7 +3,10 @@ import { Router, Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import yieldRouter, { currentYieldsCache } from './yieldRouter.js';
 // 1. IMPORT YOUR EXISTING COMPILER FROM THE SRC FOLDER
-import { compileYieldIntent } from '../ptbCompiler.js'; 
+// apps/backend/src/routes/chatRouter.ts
+
+// Change Line 9 to point exactly one folder up, ending in .js:
+import { compileYieldIntent } from '../ptbCompiler.js';
 
 const chatRouter = Router();
 
