@@ -13,6 +13,13 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    // 1. ADD THIS: Explicitly tell TypeScript to search up the monorepo tree for types
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    // 2. CRITICAL FOR PNPM: Make sure this is either omitted or set to false
+    "preserveSymlinks": false, 
     "plugins": [
       {
         "name": "next"
