@@ -16,26 +16,26 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 1. DYNAMIC CONTEXT EXTRACTION: Grab live states or fallback safely
+    // 1. DYNAMIC CONTEXT EXTRACTION: Safely read the global live metrics cache object
     const liveYieldsContext = currentYieldsCache && Object.keys(currentYieldsCache).length > 0 
       ? currentYieldsCache 
       : null;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash', 
-      contents: `User Prompt: "${prompt}"\n\nLive Metrics Context: ${JSON.stringify(liveYieldsContext || "No active memory cache data available.")}`,
+      contents: `User Prompt: "${prompt}"\n\nLive Metrics Context Data: ${JSON.stringify(liveYieldsContext || "No active memory cache data available.")}`,
       config: {
-        // 2. REINFORCED AGENT DIRECTIVES: Explicitly prevent "Unknown" fallback states
-        systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON. Read the provided Live Metrics Context. If the context is empty or unpopulated, do not leave targetProtocol as unknown; instead, select the industry-optimal standard protocol for that specific asset (e.g., default vSUI or SUI requests to Navi, and LP pair requests to Cetus) and outline that default routing selection inside your reasoning parameter. Do not include markdown formatting backticks—output raw JSON only.",
+        // 2. REINFORCED CASE-INSENSITIVE AGENT DIRECTIVES
+        systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON object. Note that keys in the Live Metrics Context Data are uppercase (e.g., 'SUI', 'VSUI', 'USDC'). Match user requests to these keys regardless of case differences (e.g., 'vSUI' or 'vsui' maps directly to the 'VSUI' context metrics array). Analyze the protocols in the array for that asset and choose the one offering the highest numerical 'apy'. If the context data is empty, default to industry-standard protocols (e.g., Navi for SUI/vSUI lending, Cetus for pool pairs) and explain this fallback in your reasoning. Do not include markdown code block backticks—output raw JSON only.",
         responseMimeType: "application/json",
         responseSchema: {
           type: "object",
           properties: {
             intent: { type: "string", description: "The core action, e.g., yield_optimize, check_balance" },
-            asset: { type: "string", description: "The token ticker symbol, e.g., SUI, vSUI, USDC" },
+            asset: { type: "string", description: "The token ticker symbol found in the user prompt, e.g., vSUI, SUI, USDC" },
             amount: { type: "number", description: "The exact numerical asset volume requested" },
-            targetProtocol: { type: "string", description: "The optimized protocol chosen (e.g., Navi, Cetus)" },
-            reasoning: { type: "string", description: "A brief engineering rationale for this specific routing path" }
+            targetProtocol: { type: "string", description: "The optimized protocol chosen from the context metrics array based on highest APY (e.g., Cetus, Navi)" },
+            reasoning: { type: "string", description: "A detailed breakdown citing the specific APY metrics from the context data that make this routing path mathematically superior" }
           },
           required: ["intent", "asset", "amount", "targetProtocol", "reasoning"]
         }
