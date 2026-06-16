@@ -1,8 +1,12 @@
+// apps/backend/src/ptbCompiler.ts
 import { Transaction } from '@mysten/sui/transactions';
 
 export async function compileYieldIntent(intentData: any): Promise<string> {
   try {
-    if (intentData.intent === 'yield_optimize' && intentData.asset === 'vSUI') {
+    // 1. NORMALIZE TRANSFERRED TICKERS: Force all-caps processing (e.g., 'vSUI' or 'vsui' -> 'VSUI')
+    const normalizedAsset = intentData?.asset ? String(intentData.asset).toUpperCase() : '';
+
+    if (intentData.intent === 'yield_optimize' && normalizedAsset === 'VSUI') {
       const tx = new Transaction();
 
       // Convert explicitly to a safe number, then drop it into BigInt to satisfy strict type checking
