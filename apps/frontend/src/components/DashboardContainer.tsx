@@ -4,7 +4,8 @@
 import LLMInterface from './LLMInterface'; // Path points correctly to where your LLMInterface is
 import Providers from './Providers'; // Path points correctly to your client wallet providers
 import { useEffect, useState, useMemo } from "react";
-import { ConnectButton } from '@mysten/dapp-kit';
+import { ConnectButton, useSignAndExecuteTransaction, useCurrentAccount } from '@mysten/dapp-kit';
+import { Transaction } from '@mysten/sui/transactions';
 
 // ---------- Types ----------
 interface Yield {
@@ -84,6 +85,10 @@ export default function DashboardContainer() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("ALL");
 
+  // 1. INJECT CORE SUI WALLET SIGNING HOOKS
+  const currentAccount = useCurrentAccount();
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+
   useEffect(() => {
     const controller = new AbortController();
     const fetchYields = async () => {
@@ -126,6 +131,23 @@ export default function DashboardContainer() {
     if (activeTab === "ALL") return yields;
     return yields.filter((y) => y.symbol === activeTab.toUpperCase());
   }, [yields, activeTab]);
+
+  // 2. DEFINE TRANSMISSION HANDSHAKE CALLOUT FOR THE LLM LAYER
+  const executeOnChainPayload = async (txBase64Data: string): Promise<string> => {
+    if (!currentAccount) {
+      throw new Error("Wallet account not connected. Please hook up your wallet extension card above.");
+    }
+    
+    // Deserialize base64 block package straight back into an operational Transaction instance
+    const transactionBlock = Transaction.from(txBase64Data);
+    
+    // Trigger the active connected wallet popup signature prompt natively
+    const result = await signAndExecuteTransaction({
+      transaction: transactionBlock,
+    });
+    
+    return result.digest;
+  };
 
   return (
     <Providers>
@@ -212,7 +234,11 @@ export default function DashboardContainer() {
 
           <div style={styles.aiSection}>
             <h2 style={styles.aiTitle}>// ALPHA_ROUTE INTELLIGENT AGENT TERMINAL</h2>
-            <LLMInterface />
+            {/* 3. ATTACH THE PLATFORM CALLOUT EXECUTION LINK AS A PROP */}
+            <LLMInterface 
+              onExecuteTransaction={executeOnChainPayload} 
+              isWalletConnected={!!currentAccount}
+            />
           </div>
         </div>
       </main>
