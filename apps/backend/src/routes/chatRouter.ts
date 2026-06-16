@@ -1,7 +1,7 @@
 // apps/backend/src/routes/chatRouter.ts
 import { Router, Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-import { getLiveYieldsCache } from './yieldRouter.js'; // 1. Swapped for the live dynamic function getter
+import { getLiveYieldsCache } from './yieldRouter.js'; // Swapped for the live dynamic function getter
 import { compileYieldIntent } from '../ptbCompiler.js'; // Direct relative link with ESM extension
 
 const chatRouter = Router();
@@ -16,8 +16,28 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 2. DYNAMIC CONTEXT EXTRACTION: Call the getter to secure hot memory cache allocations
-    const activeCache = getLiveYieldsCache();
+    // 1. DYNAMIC CONTEXT EXTRACTION: Grab hot memory cache allocations
+    let activeCache = getLiveYieldsCache();
+
+    // 2. EMERGENCY SELF-HEALING FALLBACK: If memory context is empty, pull directly from the active api route
+    if (!activeCache || Object.keys(activeCache).length === 0) {
+      console.log('[AlphaRoute Matrix] Cache reference isolated. Triggering emergency internal fetch synchronization loop...');
+      try {
+        // Construct local address mapping using the environment port context natively
+        const serverPort = process.env.PORT || 8080;
+        const localResponse = await fetch(`http://127.0.0.1:${serverPort}/api/yields`);
+        
+        if (localResponse.ok) {
+          const parsedEnvelope: any = await localResponse.json();
+          // Unbox envelope seamlessly if nested under 'data' parameter attributes
+          activeCache = parsedEnvelope?.data || parsedEnvelope;
+          console.log('[AlphaRoute Matrix] Emergency sync complete. Local context extracted safely.');
+        }
+      } catch (fetchError) {
+        console.error('[AlphaRoute Matrix Failure] Emergency local fetch execution crashed:', fetchError);
+      }
+    }
+
     const liveYieldsContext = activeCache && Object.keys(activeCache).length > 0 
       ? activeCache 
       : null;
