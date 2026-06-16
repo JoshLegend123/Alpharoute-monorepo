@@ -8,6 +8,9 @@ const router = Router();
 export let currentYieldsCache: any = {
   // Your live object properties/arrays live here...
 };
+export function getLiveYieldsCache() {
+  return currentYieldsCache;
+}
 
 // Initialize the Guardian security engine to inspect Testnet execution blocks
 const guardian = new TheGuardian('testnet');

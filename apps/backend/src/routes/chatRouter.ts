@@ -1,7 +1,7 @@
 // apps/backend/src/routes/chatRouter.ts
 import { Router, Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-import { currentYieldsCache } from './yieldRouter.js';
+import { getLiveYieldsCache } from './yieldRouter.js'; // 1. Swapped for the live dynamic function getter
 import { compileYieldIntent } from '../ptbCompiler.js'; // Direct relative link with ESM extension
 
 const chatRouter = Router();
@@ -16,16 +16,17 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 1. DYNAMIC CONTEXT EXTRACTION: Safely read the global live metrics cache object
-    const liveYieldsContext = currentYieldsCache && Object.keys(currentYieldsCache).length > 0 
-      ? currentYieldsCache 
+    // 2. DYNAMIC CONTEXT EXTRACTION: Call the getter to secure hot memory cache allocations
+    const activeCache = getLiveYieldsCache();
+    const liveYieldsContext = activeCache && Object.keys(activeCache).length > 0 
+      ? activeCache 
       : null;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash', 
       contents: `User Prompt: "${prompt}"\n\nLive Metrics Context Data: ${JSON.stringify(liveYieldsContext || "No active memory cache data available.")}`,
       config: {
-        // 2. REINFORCED CASE-INSENSITIVE AGENT DIRECTIVES
+        // 3. REINFORCED CASE-INSENSITIVE AGENT DIRECTIVES
         systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON object. Note that keys in the Live Metrics Context Data are uppercase (e.g., 'SUI', 'VSUI', 'USDC'). Match user requests to these keys regardless of case differences (e.g., 'vSUI' or 'vsui' maps directly to the 'VSUI' context metrics array). Analyze the protocols in the array for that asset and choose the one offering the highest numerical 'apy'. If the context data is empty, default to industry-standard protocols (e.g., Navi for SUI/vSUI lending, Cetus for pool pairs) and explain this fallback in your reasoning. Do not include markdown code block backticks—output raw JSON only.",
         responseMimeType: "application/json",
         responseSchema: {
