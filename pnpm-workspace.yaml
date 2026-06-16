@@ -1,4 +1,7 @@
-# pnpm-workspace.yaml
 packages:
   - "apps/*"
   - "packages/*"
+
+# Force every package across the workspace to evaluate against this exact version
+overrides:
+  "@mysten/sui": "1.45.2"
