@@ -8,7 +8,12 @@ const router = Router();
 export let currentYieldsCache: any = {
   // Your live object properties/arrays live here...
 };
+
 export function getLiveYieldsCache() {
+  // If the background loop stored the whole envelope, pull the inner data object instantly
+  if (currentYieldsCache && currentYieldsCache.data) {
+    return currentYieldsCache.data;
+  }
   return currentYieldsCache;
 }
 
