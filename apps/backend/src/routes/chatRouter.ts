@@ -1,18 +1,13 @@
 // apps/backend/src/routes/chatRouter.ts
 import { Router, Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-// 1. FIXED: Explicitly use the combined import pattern to catch the named export
 import yieldRouter, { currentYieldsCache } from './yieldRouter.js';
+// 1. IMPORT YOUR EXISTING COMPILER FROM THE SRC FOLDER
+import { compileYieldIntent } from '../ptbCompiler.js'; 
 
 const chatRouter = Router();
 
-// 2. FIXED: Safeguard the API key extraction to satisfy strict TypeScript definitions
 const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.warn("⚠️ Warning: GEMINI_API_KEY is not defined in the environment variables configuration.");
-}
-
-// Pass a guaranteed string fallback to the constructor
 const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
@@ -25,17 +20,16 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
 
     const liveYieldsContext = currentYieldsCache || {};
 
-    // Call Gemini with strict JSON schema enforcement
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash', 
       contents: `User Prompt: "${prompt}"\n\nLive Metrics Context: ${JSON.stringify(liveYieldsContext)}`,
       config: {
-        systemInstruction: "You are the AlphaRoute Intent Engine. Your sole job is to translate user natural language into a structured transaction strategy JSON object based on the provided live context. Do not include markdown code block formatting backticks—output raw JSON only.",
+        systemInstruction: "You are the AlphaRoute Intent Engine. Your sole job is to translate user natural language into a structured transaction strategy JSON object based on the provided live context. Do not include markdown code block formatting backticks—output raw JSON only. IMPORTANT: For the asset field, always match the ticker precisely (e.g., vSUI).",
         responseMimeType: "application/json",
         responseSchema: {
           type: "object",
           properties: {
-            intent: { type: "string", description: "The core action, e.g., yield_optimize, check_balance, rebalance" },
+            intent: { type: "string", description: "The core action, e.g., yield_optimize, check_balance" },
             asset: { type: "string", description: "The token ticker symbol, e.g., SUI, vSUI, USDC" },
             amount: { type: "number", description: "The exact numerical asset volume requested" },
             targetProtocol: { type: "string", description: "The optimized protocol chosen from the context array" },
@@ -46,18 +40,40 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       }
     });
 
-    // Extract text safely from the response structure
     const responseText = response.text;
     if (!responseText) {
-      throw new Error('Empty text payload returned from generative matrix engine.');
+      throw new Error('Empty text payload returned from generative engine.');
     }
 
-    // Parse the structured response directly
     const intentPayload = JSON.parse(responseText);
     
-    // Return the response back to your terminal UI view
+    // 2. CONVERT THE AMOUNT TO MIST (SUI decimals) BEFORE PASSING TO BIGINT
+    // This scales the standard number from Gemini up to blockchain integers safely
+    const scaledAmount = Math.floor(intentPayload.amount * 1_000_000_000);
+
+    // 3. PASS THE DATA INTO YOUR EXISTING FUNCTION MODULE
+    let compiledSuiTxData = '';
+    let pipelineStatus = 'Intent mapped successfully. No transaction required.';
+
+    if (intentPayload.intent === 'yield_optimize') {
+      try {
+        compiledSuiTxData = await compileYieldIntent({
+          intent: intentPayload.intent,
+          asset: intentPayload.asset,
+          amount: scaledAmount, // Scaled for BigInt safety
+          protocol: intentPayload.targetProtocol
+        });
+        pipelineStatus = '🚀 Atomic PTB compiled successfully and attached to response payload.';
+      } catch (txError: any) {
+        console.error('PTB Compilation error:', txError);
+        pipelineStatus = `⚠️ Intent parsed, but PTB compilation failed: ${txError.message}`;
+      }
+    }
+
+    // 4. RETURN BOTH THE ANALYSIS AND THE BINARY TRANSACTION DATAPACKET
     res.json({ 
-      reply: `[INTENT DETECTED: ${intentPayload.intent}]\nAsset: ${intentPayload.amount} ${intentPayload.asset}\nTarget Route: ${intentPayload.targetProtocol}\n\nStrategy Analysis:\n${intentPayload.reasoning}` 
+      reply: `[INTENT DETECTED: ${intentPayload.intent}]\nAsset: ${intentPayload.amount} ${intentPayload.asset}\nTarget Route: ${intentPayload.targetProtocol}\n\nStrategy Analysis:\n${intentPayload.reasoning}\n\nPipeline Status:\n${pipelineStatus}`,
+      txData: compiledSuiTxData 
     });
 
   } catch (error) {
