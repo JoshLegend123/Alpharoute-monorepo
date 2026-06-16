@@ -1,3 +1,4 @@
+// apps/backend/src/routes/chatRouter.ts
 import { Router } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import { currentYieldsCache } from './yieldRouter.js';
@@ -12,12 +13,16 @@ chatRouter.post('/chat', async (req, res) => {
             res.status(400).json({ error: 'Prompt is required' });
             return;
         }
-        const liveYieldsContext = currentYieldsCache || {};
+        // 1. DYNAMIC CONTEXT EXTRACTION: Grab live states or fallback safely
+        const liveYieldsContext = currentYieldsCache && Object.keys(currentYieldsCache).length > 0
+            ? currentYieldsCache
+            : null;
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `User Prompt: "${prompt}"\n\nLive Metrics Context: ${JSON.stringify(liveYieldsContext)}`,
+            contents: `User Prompt: "${prompt}"\n\nLive Metrics Context: ${JSON.stringify(liveYieldsContext || "No active memory cache data available.")}`,
             config: {
-                systemInstruction: "You are the AlphaRoute Intent Engine. Your sole job is to translate user natural language into a structured transaction strategy JSON object based on the provided live context. Do not include markdown code block formatting backticks—output raw JSON only.",
+                // 2. REINFORCED AGENT DIRECTIVES: Explicitly prevent "Unknown" fallback states
+                systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON. Read the provided Live Metrics Context. If the context is empty or unpopulated, do not leave targetProtocol as unknown; instead, select the industry-optimal standard protocol for that specific asset (e.g., default vSUI or SUI requests to Navi, and LP pair requests to Cetus) and outline that default routing selection inside your reasoning parameter. Do not include markdown formatting backticks—output raw JSON only.",
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: "object",
@@ -25,7 +30,7 @@ chatRouter.post('/chat', async (req, res) => {
                         intent: { type: "string", description: "The core action, e.g., yield_optimize, check_balance" },
                         asset: { type: "string", description: "The token ticker symbol, e.g., SUI, vSUI, USDC" },
                         amount: { type: "number", description: "The exact numerical asset volume requested" },
-                        targetProtocol: { type: "string", description: "The optimized protocol chosen from the context array" },
+                        targetProtocol: { type: "string", description: "The optimized protocol chosen (e.g., Navi, Cetus)" },
                         reasoning: { type: "string", description: "A brief engineering rationale for this specific routing path" }
                     },
                     required: ["intent", "asset", "amount", "targetProtocol", "reasoning"]
