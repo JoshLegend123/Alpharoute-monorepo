@@ -5,6 +5,10 @@ import { TheGuardian } from '../middleware/guardianService.js';
 
 const router = Router();
 
+export let currentYieldsCache: any = {
+  // Your live object properties/arrays live here...
+};
+
 // Initialize the Guardian security engine to inspect Testnet execution blocks
 const guardian = new TheGuardian('testnet');
 

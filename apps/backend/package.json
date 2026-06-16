@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@alpharoute/shared-types": "workspace:*",
+    "@google/genai": "^2.8.0",
     "@mysten/sui": "^1.12.0",
     "@naviprotocol/lending": "^1.4.6",
     "cors": "^2.8.5",
