@@ -1,4 +1,3 @@
-// apps/backend/src/ptbCompiler.ts
 import { Transaction } from '@mysten/sui/transactions';
 
 export async function compileYieldIntent(intentData: any): Promise<string> {
@@ -9,7 +8,7 @@ export async function compileYieldIntent(intentData: any): Promise<string> {
       // Convert explicitly to a safe number, then drop it into BigInt to satisfy strict type checking
       const cleanAmount = BigInt(Math.floor(Number(intentData.amount)));
       
-      // FIXED: Use explicit u64 type serialization mapping to clear the Uint8Array error
+      // Explicit u64 type serialization mapping
       const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(cleanAmount)]);
 
       tx.moveCall({
@@ -18,7 +17,6 @@ export async function compileYieldIntent(intentData: any): Promise<string> {
         arguments: [coin],
       });
 
-      // Serialize the transaction block blueprint into a safe string packet
       return await tx.serialize();
     }
 
