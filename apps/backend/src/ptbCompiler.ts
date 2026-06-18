@@ -15,11 +15,17 @@ export async function compileYieldIntent(intentData: any): Promise<string> {
       // Explicit u64 type serialization mapping
       const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(cleanAmount)]);
 
-      tx.moveCall({
-        target: '0x0000000000000000000000000000000000000000000000000000000000000123::vault::deposit',
-        typeArguments: ['0x2::sui::SUI'],
-        arguments: [coin],
-      });
+
+// 🟢 Replace your mock tx.moveCall block with this verified Navi Mainnet call:
+tx.moveCall({
+  target: '0xa1967d710e20600a94432a13dc650ee428fa6e0a811bc0beebda40da753b8118::lending::deposit',
+  typeArguments: ['0x2::sui::SUI'],
+  arguments: [
+    tx.object('0x96b0a471012f190e21bc34e6fb2e62438db72c087bb713919e1f5793cb337ad7'), // 1. Navi Storage/Pool Object ID
+    coin,                                                                         // 2. Your split SUI coin object
+    tx.pure.u8(0)                                                                 // 3. Asset ID for SUI in Navi (0 = SUI)
+  ],
+});
 
       return await tx.serialize();
     }
