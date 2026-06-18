@@ -1,5 +1,7 @@
 // apps/frontend/src/app/layout.tsx
 import "./globals.css";
+import Providers from '@/components/Providers'; // Adjust path if necessary to target your providers file
+
 
 export const metadata = {
   title: "AlphaRoute Terminal",
@@ -13,8 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, backgroundColor: '#09090b' }}>
-        {children}
+      <body>
+        {/* Wrap the entire children stack so every component has wallet context */}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

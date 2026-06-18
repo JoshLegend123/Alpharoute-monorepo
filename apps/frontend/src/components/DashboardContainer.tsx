@@ -2,7 +2,6 @@
 "use client";
 
 import LLMInterface from './LLMInterface'; // Path points correctly to where your LLMInterface is
-import Providers from './Providers'; // Path points correctly to your client wallet providers
 import { useEffect, useState, useMemo } from "react";
 import { ConnectButton, useSignAndExecuteTransaction, useCurrentAccount } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
@@ -154,7 +153,6 @@ export default function DashboardContainer() {
   };
 
   return (
-    <Providers>
       <main style={styles.main}>
         <nav style={styles.nav}>
           <div style={styles.logoBox}>
@@ -246,6 +244,5 @@ export default function DashboardContainer() {
           </div>
         </div>
       </main>
-    </Providers>
   );
 }
