@@ -6,9 +6,14 @@ import { useState } from 'react';
 interface LLMInterfaceProps {
   onExecuteTransaction?: (txBase64Data: string) => Promise<string>;
   isWalletConnected?: boolean;
+  walletAddress?: string; // ✨ FIX: Declare the address property in your interface schema
 }
 
-export default function LLMInterface({ onExecuteTransaction, isWalletConnected = false }: LLMInterfaceProps) {
+export default function LLMInterface({ 
+  onExecuteTransaction, 
+  isWalletConnected = false,
+  walletAddress = "" // ✨ FIX: Destructure the dynamic address string parameter here
+}: LLMInterfaceProps) {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,6 +33,14 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
     setTxStatus('idle');
     setTxDigest(null);
 
+    // ✨ FIX: Enforce a client-side execution safety guard before hitting the endpoint
+    const activeSignerAddress = walletAddress || "";
+    if (!activeSignerAddress) {
+      setResponse("❌ Core Intent Halt: No connected wallet address vector found.\nPlease connect your Slush wallet using the navbar button before executing commands.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("https://alpharoutebackend-production-40c9.up.railway.app/api/chat", {
         method: "POST",
@@ -35,7 +48,11 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: input }),
+        // ✨ FIX: Bundle the active wallet address right alongside your prompt input text
+        body: JSON.stringify({ 
+          prompt: input,
+          senderAddress: activeSignerAddress
+        }),
       });
 
       if (!res.ok) {
@@ -95,7 +112,7 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
   return (
     <div style={{ backgroundColor: '#18181b40', border: '1px solid #27272a', borderRadius: '1rem', padding: '1.5rem', fontFamily: 'monospace' }}>
       {/* Console Display Screen */}
-      <div style={{ backgroundColor: '#09090b', borderRadius: '0.5rem', padding: '1rem', minHeight: '14rem', marginBottom: '1rem', border: '1px solid #18181b', whiteSpace: 'pre-wrap', color: '#34d399', fontSize: '0.875rem', overflowY: 'auto' }}>
+      <div style={{ backgroundColor: '#09090b', borderRadius: '#0.5rem', padding: '1rem', minHeight: '14rem', marginBottom: '1rem', border: '1px solid #18181b', whiteSpace: 'pre-wrap', color: '#34d399', fontSize: '0.875rem', overflowY: 'auto' }}>
         {response || '> System idle. Awaiting yield optimization execution strings...'}
       </div>
 

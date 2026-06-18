@@ -238,9 +238,10 @@ export default function DashboardContainer() {
             <h2 style={styles.aiTitle}>// ALPHA_ROUTE INTELLIGENT AGENT TERMINAL</h2>
             {/* 3. ATTACH THE PLATFORM CALLOUT EXECUTION LINK AS A PROP */}
             <LLMInterface 
-              onExecuteTransaction={executeOnChainPayload} 
-              isWalletConnected={!!currentAccount}
-            />
+  onExecuteTransaction={executeOnChainPayload} 
+  isWalletConnected={!!currentAccount}
+  walletAddress={currentAccount?.address} 
+/>
           </div>
         </div>
       </main>
