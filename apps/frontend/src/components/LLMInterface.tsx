@@ -131,10 +131,25 @@ export default function LLMInterface({
 
   return (
     <div style={{ backgroundColor: '#18181b40', border: '1px solid #27272a', borderRadius: '1rem', padding: '1.5rem', fontFamily: 'monospace' }}>
-      {/* Console Display Screen */}
-      <div style={{ backgroundColor: '#09090b', borderRadius: '#0.5rem', padding: '1rem', minHeight: '14rem', marginBottom: '1rem', border: '1px solid #18181b', whiteSpace: 'pre-wrap', color: '#34d399', fontSize: '0.875rem', overflowY: 'auto' }}>
-        {response || '> System idle. Awaiting yield optimization execution strings...'}
-      </div>
+      {/* apps/frontend/src/components/LLMInterface.tsx */}
+
+{/* Console Display Screen */}
+<div style={{ 
+  backgroundColor: '#09090b', 
+  borderRadius: '#0.5rem', 
+  padding: '1rem', 
+  minHeight: '14rem', 
+  marginBottom: '1rem', 
+  border: '1px solid #18181b', 
+  color: '#34d399', 
+  fontSize: '0.875rem', 
+  overflowY: 'auto',
+  // ✨ OPTIMIZATION: Fix terminal formatting for a pro look!
+  whiteSpace: 'pre-wrap', 
+  fontFamily: 'monospace' 
+}}>
+  {response || '> System idle. Awaiting yield optimization execution strings...'}
+</div>
 
       {/* Dynamic Wallet Popup Controller Action Frame */}
       {compiledTx && (
