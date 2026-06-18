@@ -6,13 +6,13 @@ import { useState } from 'react';
 interface LLMInterfaceProps {
   onExecuteTransaction?: (txBase64Data: string) => Promise<string>;
   isWalletConnected?: boolean;
-  walletAddress?: string; // ✨ FIX: Declare the address property in your interface schema
+  walletAddress?: string;
 }
 
 export default function LLMInterface({ 
   onExecuteTransaction, 
   isWalletConnected = false,
-  walletAddress = "" // ✨ FIX: Destructure the dynamic address string parameter here
+  walletAddress = "" 
 }: LLMInterfaceProps) {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
@@ -21,6 +21,19 @@ export default function LLMInterface({
   
   const [txStatus, setTxStatus] = useState<'idle' | 'signing' | 'success' | 'failed'>('idle');
   const [txDigest, setTxDigest] = useState<string | null>(null);
+
+  // ✨ SUGGESTION 2: Definition array for high-value hackathon test prompts
+  const SUGGESTED_PROMPTS = [
+    { label: "🚀 Optimize 100 vSUI", text: "Take 100 vSUI and optimize my yields right now." },
+    { label: "💎 Route 250 DEEP", text: "Route 250 DEEP tokens to the highest paying pool." },
+    { label: "🦅 Check 50 HAWK", text: "Optimize my strategy using 50 HAWK tokens instantly." }
+  ];
+
+  // ✨ SUGGESTION 2: Click handler to instantly load suggestions into the terminal input box
+  const handleSelectSuggestion = (text: string) => {
+    if (loading || txStatus === 'signing') return;
+    setInput(text);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +46,6 @@ export default function LLMInterface({
     setTxStatus('idle');
     setTxDigest(null);
 
-    // ✨ FIX: Enforce a client-side execution safety guard before hitting the endpoint
     const activeSignerAddress = walletAddress || "";
     if (!activeSignerAddress) {
       setResponse("❌ Core Intent Halt: No connected wallet address vector found.\nPlease connect your Slush wallet using the navbar button before executing commands.");
@@ -48,7 +60,6 @@ export default function LLMInterface({
         headers: {
           "Content-Type": "application/json",
         },
-        // ✨ FIX: Bundle the active wallet address right alongside your prompt input text
         body: JSON.stringify({ 
           prompt: input,
           senderAddress: activeSignerAddress
@@ -62,7 +73,6 @@ export default function LLMInterface({
       const data = await res.json();
       setResponse(data.reply);
       
-      // Look for the transaction package vector string explicitly
       if (data.txData) {
         setCompiledTx(data.txData);
         setResponse(prev => `${prev}\n\n📦 [INTENT MATRIX COMPILED]\nProgrammable Transaction Block compiled successfully. Ready for signature authorization input.`);
@@ -97,11 +107,10 @@ export default function LLMInterface({
     setResponse(prev => `${prev}\n\n🔄 [SLUSH HANDSHAKE STARTED]\nOpening Slush Wallet extension wrapper... Please approve the transaction request.`);
     
     try {
-      // Hand the string data to your parent component's dapp-kit hooks
       const digest = await onExecuteTransaction(compiledTx);
       setTxDigest(digest);
       setTxStatus('success');
-      setResponse(prev => `${prev}\n\n✨ [CHAIN VERIFIED SUCCESS]\nTransaction Digest: ${digest}\nFunds successfully routed to optimal pools!`);
+      setResponse(prev => `${prev}\n\n✨ [CHAIN VERIFIED SUCCESS]\nTransaction Digest: ${digest}\n[View Live on SuiVision Explorer](https://testnet.suivision.xyz/txblock/${digest})`);
     } catch (error: any) {
       console.error("[Wallet Interface Crash]", error);
       setTxStatus('failed');
@@ -146,7 +155,7 @@ export default function LLMInterface({
       )}
 
       {/* Input Form Action Row */}
-      <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.75rem' }}>
+      <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
         <input
           type="text"
           value={input}
@@ -163,6 +172,43 @@ export default function LLMInterface({
           {loading ? 'Routing...' : 'EXECUTE'}
         </button>
       </form>
+
+      {/* ✨ SUGGESTION 2: Interactive Pill Row Component Layout */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', paddingLeft: '0.25rem' }}>
+        {SUGGESTED_PROMPTS.map((suggestion, index) => (
+          <button
+            key={index}
+            type="button"
+            onClick={() => handleSelectSuggestion(suggestion.text)}
+            disabled={loading || txStatus === 'signing'}
+            style={{
+              backgroundColor: '#27272a40',
+              border: '1px solid #27272a',
+              borderRadius: '2rem',
+              padding: '0.35rem 0.85rem',
+              color: '#a1a1aa',
+              fontSize: '0.75rem',
+              cursor: loading || txStatus === 'signing' ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading && txStatus !== 'signing') {
+                e.currentTarget.style.borderColor = '#34d399';
+                e.currentTarget.style.color = '#34d399';
+                e.currentTarget.style.backgroundColor = '#34d39905';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#27272a';
+              e.currentTarget.style.color = '#a1a1aa';
+              e.currentTarget.style.backgroundColor = '#27272a40';
+            }}
+          >
+            {suggestion.label}
+          </button>
+        ))}
+      </div>
+
     </div>
   );
 }
