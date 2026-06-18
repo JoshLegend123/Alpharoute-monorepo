@@ -16,12 +16,12 @@ export async function compileYieldIntent(intentData: any): Promise<string> {
       const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(cleanAmount)]);
 
 
-// 🟢 Replace your mock tx.moveCall block with this verified Navi Mainnet call:
+// 🟡 Update your tx.moveCall block to target Navi's Testnet Contracts:
 tx.moveCall({
-  target: '0xa1967d710e20600a94432a13dc650ee428fa6e0a811bc0beebda40da753b8118::lending::deposit',
+  target: '0xe17f858a2754e0c0363bbbc2e48e02d6b359f1433f486ccf5e3f718aa6fe7d4b::lending::deposit',
   typeArguments: ['0x2::sui::SUI'],
   arguments: [
-    tx.object('0x96b0a471012f190e21bc34e6fb2e62438db72c087bb713919e1f5793cb337ad7'), // 1. Navi Storage/Pool Object ID
+    tx.object('0x0b240590a07a16f6b1580f089b275bf14a1e948c3b03683bf1e06927da803a62'), // 1. Navi Testnet Pool Storage Object ID
     coin,                                                                         // 2. Your split SUI coin object
     tx.pure.u8(0)                                                                 // 3. Asset ID for SUI in Navi (0 = SUI)
   ],
