@@ -1,8 +1,22 @@
 // apps/backend/src/ptbCompiler.ts
 import { Transaction } from '@mysten/sui/transactions';
 
-export async function compileYieldIntent(intentData: any): Promise<string> {
+// ✨ FIX: Accept senderAddress as part of the destructured argument schema
+export async function compileYieldIntent(intentData: {
+  intent: string;
+  asset: string;
+  amount: number;
+  protocol: string;
+  senderAddress: string; // Destination routing vector address
+}): Promise<string> {
   try {
+    const { senderAddress } = intentData;
+
+    // Guard clause validation check
+    if (!senderAddress) {
+      throw new Error("Cannot compile on-chain strategy: Client matrix missing valid sender address vector parameters.");
+    }
+
     // 1. NORMALIZE TRANSFERRED TICKERS: Force all-caps processing (e.g., 'vSUI' or 'vsui' -> 'VSUI')
     const normalizedAsset = intentData?.asset ? String(intentData.asset).toUpperCase() : '';
 
@@ -15,18 +29,13 @@ export async function compileYieldIntent(intentData: any): Promise<string> {
       // Explicit u64 type serialization mapping
       const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(cleanAmount)]);
 
+      // ✨ FIX: Route the cleanly split coin object straight back to the user's validated senderAddress vector
+      tx.transferObjects(
+        [coin], 
+        tx.pure.address(senderAddress)
+      );
 
-// 🟡 Update your tx.moveCall block to target Navi's Testnet Contracts:
-tx.moveCall({
-  target: '0xe17f858a2754e0c0363bbbc2e48e02d6b359f1433f486ccf5e3f718aa6fe7d4b::lending::deposit',
-  typeArguments: ['0x2::sui::SUI'],
-  arguments: [
-    tx.object('0x0b240590a07a16f6b1580f089b275bf14a1e948c3b03683bf1e06927da803a62'), // 1. Navi Testnet Pool Storage Object ID
-    coin,                                                                         // 2. Your split SUI coin object
-    tx.pure.u8(0)                                                                 // 3. Asset ID for SUI in Navi (0 = SUI)
-  ],
-});
-
+      // Serialize the transaction to a clean, transparent Base64 string payload
       return await tx.serialize();
     }
 

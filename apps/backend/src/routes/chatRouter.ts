@@ -10,7 +10,8 @@ const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { prompt } = req.body;
+    // ✨ FIX: Destructure senderAddress right alongside the prompt from the frontend fetch package
+    const { prompt, senderAddress } = req.body;
     if (!prompt) {
       res.status(400).json({ error: 'Prompt is required' });
       return;
@@ -74,11 +75,13 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
 
     if (intentPayload.intent === 'yield_optimize') {
       try {
+        // ✨ FIX: Shutter senderAddress straight into your compile handler parameters
         compiledSuiTxData = await compileYieldIntent({
           intent: intentPayload.intent,
           asset: intentPayload.asset,
           amount: scaledAmount,
-          protocol: intentPayload.targetProtocol
+          protocol: intentPayload.targetProtocol,
+          senderAddress: senderAddress // Target resolution parameter mapped smoothly
         });
         pipelineStatus = '🚀 Atomic PTB compiled successfully and attached to response payload.';
       } catch (txError: any) {
