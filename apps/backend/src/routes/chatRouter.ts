@@ -48,13 +48,15 @@ chatRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       contents: `User Prompt: "${prompt}"\n\nLive Metrics Context Data: ${JSON.stringify(liveYieldsContext || "No active memory cache data available.")}`,
       config: {
         // 3. REINFORCED CASE-INSENSITIVE AGENT DIRECTIVES
-        systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON object. Note that keys in the Live Metrics Context Data are uppercase (e.g., 'SUI', 'VSUI', 'USDC'). Match user requests to these keys regardless of case differences (e.g., 'vSUI' or 'vsui' maps directly to the 'VSUI' context metrics array). Analyze the protocols in the array for that asset and choose the one offering the highest numerical 'apy'. If the context data is empty, default to industry-standard protocols (e.g., Navi for SUI/vSUI lending, Cetus for pool pairs) and explain this fallback in your reasoning. Do not include markdown code block backticks—output raw JSON only.",
+        // ✨ UPDATE: Expanded system token indexing map boundaries to allow cross-asset yield analysis
+        systemInstruction: "You are the AlphaRoute Intent Engine. Translate natural language into a transaction strategy JSON object. Note that keys in the Live Metrics Context Data are uppercase (e.g., 'SUI', 'VSUI', 'CETUS', 'DEEP', 'HAWK'). Match user requests to these keys regardless of case differences (e.g., 'vSUI', 'cetus', 'deep', or 'hawk' maps directly to their uppercase equivalents in the context matrix). Analyze the protocols in the array for that asset and choose the one offering the highest numerical 'apy'. If the context data is empty, default to industry-standard protocols (e.g., Navi for lending pools, Cetus for AMM pool pairs) and explain this fallback in your reasoning. Do not include markdown code block backticks—output raw JSON only.",
         responseMimeType: "application/json",
         responseSchema: {
           type: "object",
           properties: {
             intent: { type: "string", description: "The core action, e.g., yield_optimize, check_balance" },
-            asset: { type: "string", description: "The token ticker symbol found in the user prompt, e.g., vSUI, SUI, USDC" },
+            // ✨ UPDATE: Expanded descriptive token examples within the schema matrix
+            asset: { type: "string", description: "The token ticker symbol found in the user prompt, e.g., SUI, vSUI, CETUS, DEEP, HAWK" },
             amount: { type: "number", description: "The exact numerical asset volume requested" },
             targetProtocol: { type: "string", description: "The optimized protocol chosen from the context metrics array based on highest APY (e.g., Cetus, Navi)" },
             reasoning: { type: "string", description: "A detailed breakdown citing the specific APY metrics from the context data that make this routing path mathematically superior" }

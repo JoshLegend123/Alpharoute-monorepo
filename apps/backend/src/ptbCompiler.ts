@@ -1,7 +1,6 @@
 // apps/backend/src/ptbCompiler.ts
 import { Transaction } from '@mysten/sui/transactions';
 
-// ✨ FIX: Accept senderAddress as part of the destructured argument schema
 export async function compileYieldIntent(intentData: {
   intent: string;
   asset: string;
@@ -17,10 +16,13 @@ export async function compileYieldIntent(intentData: {
       throw new Error("Cannot compile on-chain strategy: Client matrix missing valid sender address vector parameters.");
     }
 
-    // 1. NORMALIZE TRANSFERRED TICKERS: Force all-caps processing (e.g., 'vSUI' or 'vsui' -> 'VSUI')
+    // 1. NORMALIZE TRANSFERRED TICKERS: Force all-caps processing
     const normalizedAsset = intentData?.asset ? String(intentData.asset).toUpperCase() : '';
 
-    if (intentData.intent === 'yield_optimize' && normalizedAsset === 'VSUI') {
+    // ✨ UPDATE: Array containing all supported tracking tokens
+    const allowedAssets = ['SUI', 'VSUI', 'CETUS', 'DEEP', 'HAWK'];
+
+    if (intentData.intent === 'yield_optimize' && allowedAssets.includes(normalizedAsset)) {
       const tx = new Transaction();
 
       // Convert explicitly to a safe number, then drop it into BigInt to satisfy strict type checking
@@ -29,7 +31,7 @@ export async function compileYieldIntent(intentData: {
       // Explicit u64 type serialization mapping
       const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(cleanAmount)]);
 
-      // ✨ FIX: Route the cleanly split coin object straight back to the user's validated senderAddress vector
+      // Route the cleanly split coin object straight back to the user's validated senderAddress vector
       tx.transferObjects(
         [coin], 
         tx.pure.address(senderAddress)

@@ -2,17 +2,19 @@
 import express from 'express';
 import cors from 'cors';
 import yieldRouter from './routes/yieldRouter.js';
-// 1. IMPORT: Register your new Gemini intent compiler route module here
 import chatRouter from './routes/chatRouter.js';
+
+// ✨ IMPORT: Grab the unified service fetcher directly to fuel the background worker
+import { getUnifiedYieldData } from './services/yieldService.js';
+import { currentYieldsCache } from './routes/yieldRouter.js';
 
 const app = express();
 
-// Configure CORS with your exact, character-perfect frontend origins
 app.use(cors({
   origin: [
-    'https://alpharoutefrontend-production.up.railway.app',   // <-- Match your exact browser origin perfectly
-    'https://alpharoute-frontend-production.up.railway.app',  // Alternate layout fallback
-    'http://localhost:3000'                                   // Local development fallback
+    'https://alpharoutefrontend-production.up.railway.app',
+    'https://alpharoute-frontend-production.up.railway.app',
+    'http://localhost:3000'
   ],
   methods: ['GET', 'POST'],
   credentials: true
@@ -20,10 +22,33 @@ app.use(cors({
 
 app.use(express.json());
 
-// Target routes setup
 app.use('/api', yieldRouter);
-// 2. MOUNT: Explicitly map your intent engine so it listens securely for /api/chat requests
 app.use('/api', chatRouter);
+
+// ===================================================================================
+// ✨ BACKGROUND MATRIX WORKER: Keeps your multi-asset yield data hot and fast
+// ===================================================================================
+async function runBackgroundSyncWorker() {
+  try {
+    console.log('[Cron Framework] Syncing hot allocations for SUI, VSUI, CETUS, DEEP, HAWK...');
+    const freshYields = await getUnifiedYieldData();
+    
+    if (freshYields && freshYields.data) {
+      // Mutate the imported cache object instantly
+      Object.assign(currentYieldsCache, freshYields.data);
+      console.log('[Cron Framework] Multi-asset memory cache matrix updated successfully.');
+    }
+  } catch (err) {
+    console.error('[Cron Framework Failure] Error running background token sync:', err);
+  }
+}
+
+// Fire once immediately on server boot up
+runBackgroundSyncWorker();
+
+// Automatically update every 5 minutes (300,000 ms)
+setInterval(runBackgroundSyncWorker, 300000);
+// ===================================================================================
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

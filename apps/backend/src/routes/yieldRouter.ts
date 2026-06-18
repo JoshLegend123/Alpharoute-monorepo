@@ -9,6 +9,9 @@ export let currentYieldsCache: any = {
   // Your live object properties/arrays live here...
 };
 
+// ✨ UPDATE: Centralize supported tokens to make it easy for your compiler and chat routes to read
+export const SUPPORTED_ASSETS = ['SUI', 'VSUI', 'CETUS', 'DEEP', 'HAWK'];
+
 export function getLiveYieldsCache() {
   // If the background loop stored the whole envelope, pull the inner data object instantly
   if (currentYieldsCache && currentYieldsCache.data) {
@@ -23,7 +26,7 @@ const guardian = new TheGuardian('testnet');
 /**
  * GET /api/yields
  * Returns unified DeFi yield opportunities for the Sui network.
- * Optional query parameter: ?symbol=SUI
+ * Optional query parameter: ?symbol=SUI (Supports: SUI, VSUI, CETUS, DEEP, HAWK)
  */
 router.get('/yields', async (req: Request, res: Response) => {
   try {
