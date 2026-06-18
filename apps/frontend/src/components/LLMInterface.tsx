@@ -112,16 +112,26 @@ export default function LLMInterface({
     setTxStatus('signing');
     setResponse(prev => `${prev}\n\n🔄 [SLUSH HANDSHAKE STARTED]\nOpening Slush Wallet extension wrapper... Please approve the transaction request.`);
     
-    try {
-      const digest = await onExecuteTransaction?.(compiledTx);
-      setTxDigest(digest || null);
-      setTxStatus('success');
-      setResponse(prev => `${prev}\n\n✨ [CHAIN VERIFIED SUCCESS]\nTransaction Digest: ${digest}\nFunds successfully routed to optimal pools!`);
-    } catch (error: any) {
-      console.error("[Wallet Interface Crash]", error);
-      setTxStatus('failed');
-      setResponse(prev => `${prev}\n\n⚠️ [TRANSACTION DENIED]\nWallet signature authorization failed: ${error.message || 'Signature rejected'}`);
-    }
+    // apps/frontend/src/components/LLMInterface.tsx
+
+try {
+  // Hand the string data to your parent component's dapp-kit hooks
+  const digest = await onExecuteTransaction?.(compiledTx);
+  setTxDigest(digest || null);
+  setTxStatus('success');
+  
+  // ✨ FIX: Restored the live, clickable SuiVision Testnet URL link string template formatting
+  setResponse(prev => 
+    `${prev}\n\n✨ [CHAIN VERIFIED SUCCESS]\n` +
+    `Transaction Digest: ${digest}\n\n` +
+    `🔗 View Verified Chain Operation on Explorer:\n` +
+    `https://testnet.suivision.xyz/txblock/${digest}`
+  );
+} catch (error: any) {
+  console.error("[Wallet Interface Crash]", error);
+  setTxStatus('failed');
+  setResponse(prev => `${prev}\n\n⚠️ [TRANSACTION DENIED]\nWallet signature authorization failed: ${error.message || 'Signature rejected'}`);
+}
   };
 
   return (
