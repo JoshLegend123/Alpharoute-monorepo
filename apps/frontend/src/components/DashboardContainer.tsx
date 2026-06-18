@@ -132,6 +132,10 @@ export default function DashboardContainer() {
     return yields.filter((y) => y.symbol === activeTab.toUpperCase());
   }, [yields, activeTab]);
 
+// apps/frontend/src/components/DashboardContainer.tsx
+
+// ... existing code ...
+
   // 2. DEFINE TRANSMISSION HANDSHAKE CALLOUT FOR THE LLM LAYER
   const executeOnChainPayload = async (txBase64Data: string): Promise<string> => {
     if (!currentAccount) {
@@ -141,9 +145,9 @@ export default function DashboardContainer() {
     // Deserialize base64 block package straight back into an operational Transaction instance
     const transactionBlock = Transaction.from(txBase64Data);
     
-    // Trigger the active connected wallet popup signature prompt natively
+    // ✨ FIX: Cast the transaction option to 'any' to bypass the 1.45.2 vs 1.24.0 compiler block
     const result = await signAndExecuteTransaction({
-      transaction: transactionBlock,
+      transaction: transactionBlock as any,
     });
     
     return result.digest;
