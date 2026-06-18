@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 
-// 1. DEFINE PROPS INTERFACE TO ACCEPT DYNAMIC WALLET ROUTING FROM THE DASHBOARD
 interface LLMInterfaceProps {
   onExecuteTransaction?: (txBase64Data: string) => Promise<string>;
   isWalletConnected?: boolean;
@@ -15,7 +14,6 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
   const [loading, setLoading] = useState(false);
   const [compiledTx, setCompiledTx] = useState<string | null>(null);
   
-  // Secondary runtime status tracking loop inside the client terminal card panel
   const [txStatus, setTxStatus] = useState<'idle' | 'signing' | 'success' | 'failed'>('idle');
   const [txDigest, setTxDigest] = useState<string | null>(null);
 
@@ -47,9 +45,12 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
       const data = await res.json();
       setResponse(data.reply);
       
+      // Look for the transaction package vector string explicitly
       if (data.txData) {
         setCompiledTx(data.txData);
-        console.log('🔗 Executable Sui PTB Data Vector Cached:', data.txData);
+        setResponse(prev => `${prev}\n\n📦 [INTENT MATRIX COMPILED]\nProgrammable Transaction Block compiled successfully. Ready for signature authorization input.`);
+      } else {
+        setResponse(prev => `${prev}\n\nℹ️ System returned a text informational block. No on-chain operations were requested.`);
       }
 
     } catch (err: any) {
@@ -57,45 +58,55 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
         console.log('Stream request aborted.');
       } else {
         console.error('Terminal Submission Exception:', err);
-        setResponse("Error capturing stream execution: Network response handshake failed");
+        setResponse(`❌ Error capturing stream execution: ${err.message || 'Network response handshake failed'}`);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. TRIGGER ON-CHAIN WALLET POPUP ROUTINE INTERFACES NATIVELY
   const handleAuthorizeWalletTx = async () => {
-    if (!compiledTx || !onExecuteTransaction) return;
+    if (!compiledTx) {
+      setResponse(prev => `${prev}\n❌ Cannot execute: No compiled transaction block found in local state workspace.`);
+      return;
+    }
+    
+    if (!onExecuteTransaction) {
+      setResponse(prev => `${prev}\n❌ Interface configuration error: The parent wallet routing link callback is undefined.`);
+      return;
+    }
     
     setTxStatus('signing');
+    setResponse(prev => `${prev}\n\n🔄 [SLUSH HANDSHAKE STARTED]\nOpening Slush Wallet extension wrapper... Please approve the transaction request.`);
+    
     try {
+      // Hand the string data to your parent component's dapp-kit hooks
       const digest = await onExecuteTransaction(compiledTx);
       setTxDigest(digest);
       setTxStatus('success');
-      setResponse(prev => `${prev}\n\n📦 [CHAIN VERIFIED SUCCESS]\nTransaction Digest: ${digest}\nYour funds have been successfully routed into the optimal liquidity vault layer.`);
+      setResponse(prev => `${prev}\n\n✨ [CHAIN VERIFIED SUCCESS]\nTransaction Digest: ${digest}\nFunds successfully routed to optimal pools!`);
     } catch (error: any) {
       console.error("[Wallet Interface Crash]", error);
       setTxStatus('failed');
-      setResponse(prev => `${prev}\n\n⚠️ [USER EXPORT CANCELLED]\nWallet signature authorization failed: ${error.message || 'Signature rejected by user'}`);
+      setResponse(prev => `${prev}\n\n⚠️ [TRANSACTION DENIED]\nWallet signature authorization failed: ${error.message || 'Signature rejected or timed out'}`);
     }
   };
 
   return (
     <div style={{ backgroundColor: '#18181b40', border: '1px solid #27272a', borderRadius: '1rem', padding: '1.5rem', fontFamily: 'monospace' }}>
       {/* Console Display Screen */}
-      <div style={{ backgroundColor: '#09090b', borderRadius: '0.5rem', padding: '1rem', minHeight: '12rem', marginBottom: '1rem', border: '1px solid #18181b', whiteSpace: 'pre-wrap', color: '#34d399', fontSize: '0.875rem', overflowY: 'auto' }}>
+      <div style={{ backgroundColor: '#09090b', borderRadius: '0.5rem', padding: '1rem', minHeight: '14rem', marginBottom: '1rem', border: '1px solid #18181b', whiteSpace: 'pre-wrap', color: '#34d399', fontSize: '0.875rem', overflowY: 'auto' }}>
         {response || '> System idle. Awaiting yield optimization execution strings...'}
       </div>
 
-      {/* 3. DYNAMIC WALLET POPUP CONTROLLER ACTION FRAME */}
+      {/* Dynamic Wallet Popup Controller Action Frame */}
       {compiledTx && (
         <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: txStatus === 'success' ? 'rgba(16, 185, 129, 0.08)' : txStatus === 'failed' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(52, 211, 153, 0.05)', border: `1px solid ${txStatus === 'success' ? '#10b98140' : txStatus === 'failed' ? '#ef444440' : '#34d39925'}`, borderRadius: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ fontSize: '0.75rem', color: txStatus === 'success' ? '#10b981' : txStatus === 'failed' ? '#ef4444' : '#34d399' }}>
-            {txStatus === 'idle' && "✨ Executable Sui PTB payload compiled and signed to client memory matrix. Ready for on-chain execution."}
-            {txStatus === 'signing' && "🔗 Initializing Wallet Signatures... Please check your wallet extension workspace popup."}
-            {txStatus === 'success' && `🚀 Transaction executed successfully on-chain! Block Digest: ${txDigest}`}
-            {txStatus === 'failed' && "⚠️ Transaction compilation cancelled or dropped due to client context signature failure."}
+            {txStatus === 'idle' && "✨ Action Required: Sui PTB payload compiled to client memory matrix."}
+            {txStatus === 'signing' && "🔗 Initializing Wallet Signatures... Checking Slush extension overlay loop..."}
+            {txStatus === 'success' && `🚀 Success! Block Digest verified.`}
+            {txStatus === 'failed' && "⚠️ Transaction compilation cancelled or dropped."}
           </div>
           
           {txStatus !== 'success' && txStatus !== 'signing' && (
@@ -103,16 +114,14 @@ export default function LLMInterface({ onExecuteTransaction, isWalletConnected =
               {isWalletConnected ? (
                 <button
                   onClick={handleAuthorizeWalletTx}
-                  style={{ backgroundColor: '#34d399', color: '#09090b', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.1s' }}
-                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
-                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  style={{ backgroundColor: '#34d399', color: '#09090b', border: 'none', padding: '0.65rem 1.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'all 0.1s' }}
                 >
                   APPROVE TRANSACTION ON-CHAIN →
                 </button>
               ) : (
                 <div style={{ fontSize: '0.75rem', color: '#a1a1aa', fontStyle: 'italic' }}>
-  [Wallet connection required above to authorize on-chain deployment of this strategy package]
-</div>
+                  [Connect your Slush wallet via the navbar button above to reveal the action button]
+                </div>
               )}
             </div>
           )}
