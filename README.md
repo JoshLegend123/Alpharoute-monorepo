@@ -1,4 +1,4 @@
-# 🚀 AlphaRoute — Automated Yield Aggregator & Intent Engine
+# AlphaRoute — Automated Yield Aggregator & Intent Engine
 
 An institutional-grade, zero-custody natural language intent routing engine built natively for the **Sui Blockchain**. AlphaRoute bridges the gap between conversational AI automation and secure, atomic multi-asset DeFi execution by translating human financial directives into highly optimized **Programmable Transaction Blocks (PTBs)**.
 
@@ -6,16 +6,16 @@ Designed and engineered for the **Sui Overflow 2026 Global Virtual Hackathon** u
 
 ---
 
-## 📺 Project Demo & Presentation
+## Project Demo & Presentation
 
 * **Live Workspace URL:** [https://alpharoutefrontend-production.up.railway.app](https://alpharoutefrontend-production.up.railway.app)
 * **High-Impact Demo Video Walkthrough:** [https://youtu.be/7nde1SrG_tk](https://youtu.be/7nde1SrG_tk)
 
-> 💡 **Hackathon Reviewer Note:** This end-to-end architecture demo is packed with core software engineering details. We highly recommend playing the walkthrough video at **1.25x speed** using the YouTube player settings for the optimal pacing experience!
+>  **Hackathon Reviewer Note:** This end-to-end architecture demo is packed with core software engineering details. We highly recommend playing the walkthrough video at **1.25x speed** using the YouTube player settings for the optimal pacing experience!
 
 ---
 
-## 🛠️ High-Level System Architecture
+## High-Level System Architecture
 
 AlphaRoute implements a decoupled, **multi-layer intent-to-execution pipeline** designed to eliminate user onboarding friction while enforcing absolute client-side cryptographic security boundaries.
 
