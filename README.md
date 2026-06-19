@@ -49,14 +49,14 @@ AlphaRoute implements a decoupled, **multi-layer intent-to-execution pipeline** 
 
 5. Guardian Pre-Flight Audit Module (apps/frontend/src/components/LLMInterface.tsx): An interactive client-side sandbox container that intercepts compiled payloads and triggers real-time simulated security audits (bytecode structure parsing, package boundary tracking, price impact cushion tracking, protocol run-risk evaluation scores) before exposing signature events.
 
-🛡️ Production Roadmap: Post-Hackathon Evolution
+Production Roadmap: Post-Hackathon Evolution
 While the hackathon MVP effectively demonstrates the end-to-end user experience and validation loop using safe test vectors, the production-funded blueprint transitions from simulated guardrails to cryptographically enforced protocol boundaries:
 
 1. Multi-Protocol Move Composition: Upgrading the ptbCompiler.ts layer to chain real Move call entrypoints across Cetus pools and Navi vaults in a single atomic transaction block—utilizing Sui’s object-centric model to feed output arguments of one function directly into the next.
 
 2. RPC Ledger Dry-Running: Rewiring TheGuardian backend middleware to pass compiled Base64 payloads directly to the node network via the sui_dryRunTransactionBlock RPC endpoint to dynamically inspect balance mutations and flag unauthorized package addresses before signature prompts open.
 
-🚀 Local Installation & Workspace Setup
+Local Installation & Workspace Setup
 AlphaRoute is configured as a lightweight, performance-optimized workspace monorepo. Ensure you have Node.js (v18+) and your package manager of choice installed locally.
 
 1. Clone the Source Repository
